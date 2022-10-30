@@ -1,0 +1,76 @@
+#pragma version 6
+txn ApplicationID
+int 0
+==
+bnz main_l10
+txn OnCompletion
+int DeleteApplication
+==
+bnz main_l9
+txna ApplicationArgs 0
+byte "helpfull"
+==
+bnz main_l8
+txna ApplicationArgs 0
+byte "nothelpfull"
+==
+bnz main_l7
+txna ApplicationArgs 0
+byte "editmemory"
+==
+bnz main_l6
+err
+main_l6:
+byte "DESCRIPTION"
+txna ApplicationArgs 2
+app_global_put
+int 1
+return
+main_l7:
+byte "NOTHELPFULL"
+byte "NOTHELPFULL"
+app_global_get
+int 1
++
+app_global_put
+int 1
+return
+main_l8:
+byte "HELPFULL"
+byte "HELPFULL"
+app_global_get
+int 1
++
+app_global_put
+int 1
+return
+main_l9:
+txn Sender
+global CreatorAddress
+==
+return
+main_l10:
+txn NumAppArgs
+int 1
+==
+txn Note
+byte "memories:uv3"
+==
+&&
+txna ApplicationArgs 0
+len
+int 0
+>
+&&
+assert
+byte "DESCRIPTION"
+txna ApplicationArgs 0
+app_global_put
+byte "HELPFULL"
+int 0
+app_global_put
+byte "NOTHELPFULL"
+int 0
+app_global_put
+int 1
+return
