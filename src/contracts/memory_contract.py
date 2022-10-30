@@ -4,13 +4,14 @@ from pyteal import *
 class Memory:
     class Variables:
         description = Bytes("DESCRIPTION") 
-        helpfull = Bytes("HELPFULL") 
-        nothelpfull = Bytes("NOTHELPFULL")
+        helpful = Bytes("HELPFUL") 
+        nothelpful = Bytes("NOTHELPFUL")
+        sharedOpinion = Bytes("SHAREDOPINION")
         
 
     class AppMethods:
-        helpfull = Bytes("helpfull")
-        nothelpfull = Bytes("nothelpfull")
+        helpful = Bytes("helpful")
+        nothelpful = Bytes("nothelpful")
         editmemory = Bytes("editmemory")
        
 
@@ -18,6 +19,7 @@ class Memory:
     # this function creates a new memory
     def application_creation(self):
         return Seq([
+            # checks if input data for description is a valid value
             Assert(
                 And(
                     Txn.application_args.length() == Int(1),
@@ -26,37 +28,53 @@ class Memory:
                 )
             ), 
             App.globalPut(self.Variables.description, Txn.application_args[0]),
-            App.globalPut(self.Variables.helpfull, Int(0)),
-            App.globalPut(self.Variables.nothelpfull, Int(0)),
+            App.globalPut(self.Variables.helpful, Int(0)),
+            App.globalPut(self.Variables.nothelpful, Int(0)),
             Approve(),
         ])
 
-    
-    
-
-    # helpfull
-    def helpfull(self):
-        Assert(
-            And(
-                    Txn.sender() != Global.creator_address(),
-                    Txn.application_args.length() == Int(1),
-            ),
-        ),
+    # runs for opt-in transaction
+    def setValues(self):
         return Seq([
-            App.globalPut(self.Variables.helpfull, App.globalGet(self.Variables.helpfull) + Int(1)),
+            App.localPut(Txn.sender(), self.Variables.sharedOpinion, Int(0)),
             Approve()
         ])
 
-        # nothelpful
-    def nothelpfull(self):
+    # review a memory as helpful
+    def helpful(self):
         Assert(
             And(
+                    # checks that sender is opted in
+                    # checks that sender is not the creator of the application
+                    # checks that sender hasn't shared his opinion about this memory yet
+                    App.optedIn(Txn.sender(), Global.current_application_id()),
                     Txn.sender() != Global.creator_address(),
                     Txn.application_args.length() == Int(1),
+                    App.localGet(Txn.sender(), self.Variables.sharedOpinion) == Int(0)
             ),
         ),
         return Seq([
-            App.globalPut(self.Variables.nothelpfull, App.globalGet(self.Variables.nothelpfull) + Int(1)),
+            App.localPut(Txn.sender(), self.Variables.sharedOpinion, Int(1)),
+            App.globalPut(self.Variables.helpful, App.globalGet(self.Variables.helpful) + Int(1)),
+            Approve()
+        ])
+
+    # review a memory as not being helpful
+    def nothelpful(self):
+        Assert(
+            And(
+                    # checks that sender is opted in
+                    # checks that sender is not the creator of the application
+                    # checks that sender hasn't shared his opinion about this memory yet
+                    App.optedIn(Txn.sender(), Global.current_application_id()),
+                    Txn.sender() != Global.creator_address(),
+                    Txn.application_args.length() == Int(1),
+                    App.localGet(Txn.sender(), self.Variables.sharedOpinion) == Int(0)
+            ),
+        ),
+        return Seq([
+            App.localPut(Txn.sender(), self.Variables.sharedOpinion, Int(1)),
+            App.globalPut(self.Variables.nothelpful, App.globalGet(self.Variables.nothelpful) + Int(1)),
             Approve()
         ])
 
@@ -67,15 +85,14 @@ class Memory:
     def editmemory(self):
         Assert(
             And(
-                    Global.group_size() == Int(1),
-                    Txn.group_index() == Int(0),
                     Txn.sender() == Global.creator_address(),
                     Txn.applications.length() == Int(1),
                     Txn.application_args.length() == Int(2),
+                    Len(Txn.application_args[1]) > Int(0)
             ),
         ),
         return Seq([
-            App.globalPut(self.Variables.description, Txn.application_args[2]),
+            App.globalPut(self.Variables.description, Txn.application_args[1]),
             Approve()
         ])
 
@@ -92,9 +109,9 @@ class Memory:
             # If the the OnComplete action of the transaction is DeleteApplication, the application_deletion() method is called
             [Txn.on_completion() == OnComplete.DeleteApplication,
              self.application_deletion()],
-            # if the first argument of the transaction matches the AppMethods.buy value, the buy() method is called.
-            [Txn.application_args[0] == self.AppMethods.helpfull, self.helpfull()],
-            [Txn.application_args[0] == self.AppMethods.nothelpfull, self.nothelpfull()],
+            [Txn.on_completion() == OnComplete.OptIn, self.setValues()],
+            [Txn.application_args[0] == self.AppMethods.helpful, self.helpful()],
+            [Txn.application_args[0] == self.AppMethods.nothelpful, self.nothelpful()],
             [Txn.application_args[0] == self.AppMethods.editmemory, self.editmemory()],
         )
 
