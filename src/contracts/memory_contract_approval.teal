@@ -22,7 +22,7 @@ bnz main_l6
 err
 main_l6:
 byte "DESCRIPTION"
-txna ApplicationArgs 2
+txna ApplicationArgs 1
 app_global_put
 int 1
 return
@@ -54,7 +54,7 @@ txn NumAppArgs
 int 1
 ==
 txn Note
-byte "memories:uv3"
+byte "memories:uv4.6"
 ==
 &&
 txna ApplicationArgs 0
@@ -71,6 +71,9 @@ int 0
 app_global_put
 byte "NOTHELPFULL"
 int 0
+app_global_put
+byte "OWNER"
+txn Sender
 app_global_put
 int 1
 return
