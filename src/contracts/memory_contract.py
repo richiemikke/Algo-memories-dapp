@@ -3,47 +3,46 @@ from pyteal import *
 
 class Memory:
     class Variables:
-        description = Bytes("DESCRIPTION") 
-        helpfull = Bytes("HELPFULL") 
+        description = Bytes("DESCRIPTION")
+        helpfull = Bytes("HELPFULL")
         nothelpfull = Bytes("NOTHELPFULL")
-        
+        owner = Bytes("OWNER")
 
     class AppMethods:
         helpfull = Bytes("helpfull")
         nothelpfull = Bytes("nothelpfull")
         editmemory = Bytes("editmemory")
-       
-
 
     # this function creates a new memory
+
     def application_creation(self):
         return Seq([
             Assert(
                 And(
                     Txn.application_args.length() == Int(1),
-                    Txn.note() == Bytes("memories:uv3"),
+                    Txn.note() == Bytes("memories:uv4.6"),
                     Len(Txn.application_args[0]) > Int(0),
                 )
-            ), 
+            ),
             App.globalPut(self.Variables.description, Txn.application_args[0]),
             App.globalPut(self.Variables.helpfull, Int(0)),
             App.globalPut(self.Variables.nothelpfull, Int(0)),
+            App.globalPut(self.Variables.owner, Txn.sender()),
             Approve(),
         ])
 
-    
-    
-
     # helpfull
+
     def helpfull(self):
         Assert(
             And(
-                    Txn.sender() != Global.creator_address(),
-                    Txn.application_args.length() == Int(1),
+                Txn.sender() != App.globalGet(self.Variables.owner),
+                Txn.application_args.length() == Int(1),
             ),
         ),
         return Seq([
-            App.globalPut(self.Variables.helpfull, App.globalGet(self.Variables.helpfull) + Int(1)),
+            App.globalPut(self.Variables.helpfull, App.globalGet(
+                self.Variables.helpfull) + Int(1)),
             Approve()
         ])
 
@@ -51,31 +50,28 @@ class Memory:
     def nothelpfull(self):
         Assert(
             And(
-                    Txn.sender() != Global.creator_address(),
-                    Txn.application_args.length() == Int(1),
+                Txn.sender() != Global.creator_address(),
+                Txn.application_args.length() == Int(1),
             ),
         ),
         return Seq([
-            App.globalPut(self.Variables.nothelpfull, App.globalGet(self.Variables.nothelpfull) + Int(1)),
+            App.globalPut(self.Variables.nothelpfull, App.globalGet(
+                self.Variables.nothelpfull) + Int(1)),
             Approve()
         ])
 
-
-   
-
     # editing the memory and only the owner of the memory can do this
+
     def editmemory(self):
         Assert(
             And(
-                    Global.group_size() == Int(1),
-                    Txn.group_index() == Int(0),
-                    Txn.sender() == Global.creator_address(),
-                    Txn.applications.length() == Int(1),
-                    Txn.application_args.length() == Int(2),
+                Global.group_size() == Int(1),
+                Txn.sender() == App.globalGet(self.Variables.owner),
+                Txn.application_args.length() == Int(2),
             ),
         ),
         return Seq([
-            App.globalPut(self.Variables.description, Txn.application_args[2]),
+            App.globalPut(self.Variables.description, Txn.application_args[1]),
             Approve()
         ])
 

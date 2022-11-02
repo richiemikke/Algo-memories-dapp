@@ -35,7 +35,7 @@ const compileProgram = async (programSource) => {
 
 // CREATE PRODUCT: ApplicationCreateTxn
 export const createMemoryAction = async (senderAddress, memory) => {
-    console.log("Adding a new memory to the algorand block-chain...")
+    console.log("Adding a new memory to the algorand block-chain...", memory)
 
     let params = await algodClient.getTransactionParams().do();
 
@@ -181,15 +181,15 @@ export const nothelpfullAction = async (senderAddress, memory) => {
     );
   };
 
-  
-// RESUME SALE: Group transaction consisting of ApplicationCallTxn 
+
+// EDI ACTION: Group transaction consisting of ApplicationCallTxn 
 export const editAction = async (senderAddress, memory, newdescription) => {
-    console.log("editing  description...");
+    console.log("editing  description...", memory);
   
     let params = await algodClient.getTransactionParams().do();
   
     // Build required app args as Uint8Array
-    let editArg = new TextEncoder().encode("editdescription");
+    let editArg = new TextEncoder().encode("editmemory");
     let description = new TextEncoder().encode(newdescription);
   
     let appArgs = [editArg, description];
@@ -267,7 +267,7 @@ export const deleteMemoryAction = async (senderAddress, index) => {
     console.log("Deleted app-id: ", appId);
 }
 
-// GET PRODUCTS: Use indexer
+// GET MEMORIES: Use indexer
 export const getMemoriesAction = async () => {
     console.log("Fetching memories...")
     let note = new TextEncoder().encode(memoryNote);
@@ -291,6 +291,7 @@ export const getMemoriesAction = async () => {
         }
     }
     console.log("Memories fetched.")
+    console.log(memories)
     return memories
 }
 
@@ -316,22 +317,19 @@ const getApplication = async (appId) => {
             })
         }
 
-
         if (getField("DESCRIPTION", globalState) !== undefined) {
             let field = getField("DESCRIPTION", globalState).value.bytes
             description = base64ToUTF8String(field)
         }
 
         if (getField("HELPFULL", globalState) !== undefined) {
-            helpfull = getField("HELLPFULL", globalState).value.uint
+            helpfull = getField("HELPFULL", globalState).value.uint
         }
 
         if (getField("NOTHELPFULL", globalState) !== undefined) {
             nothelpfull = getField("NOTHELPFULL", globalState).value.uint
         }
-
-       
-
+        console.log(description, helpfull, nothelpfull, appId, owner)
         return new Memory( description, helpfull, nothelpfull, appId, owner)
     } catch (err) {
         return null;
