@@ -2,17 +2,17 @@
 txn ApplicationID
 int 0
 ==
-bnz main_l10
+bnz main_l18
 txn OnCompletion
 int DeleteApplication
 ==
-bnz main_l9
-txna ApplicationArgs 0
-byte "helpfull"
+bnz main_l17
+txn OnCompletion
+int OptIn
 ==
-bnz main_l8
+bnz main_l16
 txna ApplicationArgs 0
-byte "nothelpfull"
+byte "feedback"
 ==
 bnz main_l7
 txna ApplicationArgs 0
@@ -21,40 +21,124 @@ byte "editmemory"
 bnz main_l6
 err
 main_l6:
-byte "DESCRIPTION"
-txna ApplicationArgs 2
-app_global_put
+txna ApplicationArgs 1
+callsub storedescription_1
 int 1
 return
 main_l7:
-byte "NOTHELPFULL"
-byte "NOTHELPFULL"
+txna ApplicationArgs 1
+btoi
+int 1
+==
+bnz main_l13
+txna ApplicationArgs 1
+btoi
+int 0
+==
+bnz main_l10
+err
+main_l10:
+txn Sender
+global CreatorAddress
+!=
+txna Accounts 0
+txna Applications 0
+app_opted_in
+&&
+txna Accounts 0
+byte "FEEDBACK"
+app_local_get
+int 1
+!=
+&&
+assert
+byte "NOTHELPFUL"
+byte "NOTHELPFUL"
 app_global_get
 int 1
 +
 app_global_put
+txna Accounts 0
+byte "FEEDBACK"
+app_local_get
+int 2
+==
+bnz main_l12
+main_l11:
+txna Accounts 0
+byte "FEEDBACK"
+int 1
+app_local_put
 int 1
 return
-main_l8:
-byte "HELPFULL"
-byte "HELPFULL"
+main_l12:
+byte "HELPFUL"
+byte "HELPFUL"
+app_global_get
+int 1
+-
+app_global_put
+b main_l11
+main_l13:
+txn Sender
+global CreatorAddress
+!=
+txna Accounts 0
+txna Applications 0
+app_opted_in
+&&
+txna Accounts 0
+byte "FEEDBACK"
+app_local_get
+int 2
+!=
+&&
+assert
+byte "HELPFUL"
+byte "HELPFUL"
 app_global_get
 int 1
 +
 app_global_put
+txna Accounts 0
+byte "FEEDBACK"
+app_local_get
+int 1
+==
+bnz main_l15
+main_l14:
+txna Accounts 0
+byte "FEEDBACK"
+int 2
+app_local_put
 int 1
 return
-main_l9:
+main_l15:
+byte "NOTHELPFUL"
+byte "NOTHELPFUL"
+app_global_get
+int 1
+-
+app_global_put
+b main_l14
+main_l16:
+txna Accounts 0
+byte "FEEDBACK"
+int 0
+app_local_put
+int 1
+return
+main_l17:
 txn Sender
 global CreatorAddress
 ==
 return
-main_l10:
+main_l18:
 txn NumAppArgs
 int 1
 ==
 txn Note
-byte "memories:uv3"
+byte "memories:uv4.1"
 ==
 &&
 txna ApplicationArgs 0
@@ -63,14 +147,114 @@ int 0
 >
 &&
 assert
-byte "DESCRIPTION"
 txna ApplicationArgs 0
-app_global_put
-byte "HELPFULL"
+callsub storedescription_1
+byte "HELPFUL"
 int 0
 app_global_put
-byte "NOTHELPFULL"
+byte "NOTHELPFUL"
 int 0
 app_global_put
 int 1
 return
+
+// convert_uint_to_bytes
+convertuinttobytes_0:
+store 7
+load 7
+int 0
+==
+bnz convertuinttobytes_0_l5
+byte ""
+store 8
+load 7
+store 9
+convertuinttobytes_0_l2:
+load 9
+int 0
+>
+bnz convertuinttobytes_0_l4
+load 8
+b convertuinttobytes_0_l6
+convertuinttobytes_0_l4:
+load 9
+int 10
+%
+store 10
+byte "0123456789"
+load 10
+load 10
+int 1
++
+substring3
+load 8
+concat
+store 8
+load 9
+int 10
+/
+store 9
+b convertuinttobytes_0_l2
+convertuinttobytes_0_l5:
+byte "0"
+convertuinttobytes_0_l6:
+retsub
+
+// store_description
+storedescription_1:
+store 0
+load 0
+len
+store 2
+int 0
+store 1
+storedescription_1_l1:
+load 1
+int 8
+<
+bz storedescription_1_l7
+load 1
+callsub convertuinttobytes_0
+store 6
+int 127
+load 1
+*
+store 4
+load 2
+int 0
+==
+bnz storedescription_1_l7
+load 2
+int 127
+>
+bnz storedescription_1_l6
+load 2
+store 3
+load 2
+load 3
+-
+store 2
+storedescription_1_l5:
+load 0
+load 4
+load 3
+extract3
+store 5
+load 6
+load 5
+app_global_put
+load 1
+int 1
++
+store 1
+b storedescription_1_l1
+storedescription_1_l6:
+load 2
+int 127
+-
+store 2
+int 127
+store 3
+b storedescription_1_l5
+storedescription_1_l7:
+retsub
