@@ -2,42 +2,33 @@
 txn ApplicationID
 int 0
 ==
-bnz main_l18
+bnz main_l16
 txn OnCompletion
 int DeleteApplication
 ==
-bnz main_l17
+bnz main_l15
 txn OnCompletion
 int OptIn
 ==
-bnz main_l16
+bnz main_l14
 txna ApplicationArgs 0
 byte "feedback"
 ==
-bnz main_l7
-txna ApplicationArgs 0
-byte "editmemory"
-==
-bnz main_l6
+bnz main_l5
 err
-main_l6:
-txna ApplicationArgs 1
-callsub storedescription_1
-int 1
-return
-main_l7:
+main_l5:
 txna ApplicationArgs 1
 btoi
 int 1
 ==
-bnz main_l13
+bnz main_l11
 txna ApplicationArgs 1
 btoi
 int 0
 ==
-bnz main_l10
+bnz main_l8
 err
-main_l10:
+main_l8:
 txn Sender
 global CreatorAddress
 !=
@@ -63,23 +54,23 @@ byte "FEEDBACK"
 app_local_get
 int 2
 ==
-bnz main_l12
-main_l11:
+bnz main_l10
+main_l9:
 txna Accounts 0
 byte "FEEDBACK"
 int 1
 app_local_put
 int 1
 return
-main_l12:
+main_l10:
 byte "HELPFUL"
 byte "HELPFUL"
 app_global_get
 int 1
 -
 app_global_put
-b main_l11
-main_l13:
+b main_l9
+main_l11:
 txn Sender
 global CreatorAddress
 !=
@@ -105,40 +96,40 @@ byte "FEEDBACK"
 app_local_get
 int 1
 ==
-bnz main_l15
-main_l14:
+bnz main_l13
+main_l12:
 txna Accounts 0
 byte "FEEDBACK"
 int 2
+app_local_put
+int 1
+return
+main_l13:
+byte "NOTHELPFUL"
+byte "NOTHELPFUL"
+app_global_get
+int 1
+-
+app_global_put
+b main_l12
+main_l14:
+txna Accounts 0
+byte "FEEDBACK"
+int 0
 app_local_put
 int 1
 return
 main_l15:
-byte "NOTHELPFUL"
-byte "NOTHELPFUL"
-app_global_get
-int 1
--
-app_global_put
-b main_l14
-main_l16:
-txna Accounts 0
-byte "FEEDBACK"
-int 0
-app_local_put
-int 1
-return
-main_l17:
 txn Sender
 global CreatorAddress
 ==
 return
-main_l18:
+main_l16:
 txn NumAppArgs
 int 1
 ==
 txn Note
-byte "memories:uv4.1"
+byte "memories:uv5.1"
 ==
 &&
 txna ApplicationArgs 0

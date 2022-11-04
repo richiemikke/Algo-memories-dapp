@@ -6,7 +6,6 @@ import Loader from "../utils/Loader";
 import {
   createMemoryAction,
   sendFeedbackAction,
-  editAction,
   deleteMemoryAction,
   getMemoriesAction,
 } from "../../utils/memories";
@@ -72,22 +71,6 @@ const Memories = ({ address, fetchBalance }) => {
       });
   };
 
-  const editMemory = async (memory) => {
-    setLoading(true);
-    toast.info("Sending your changes");
-    editAction(address, memory)
-      .then(() => {
-        toast.dismiss();
-        toast.success("Memory edited successfully");
-        getMemories();
-        fetchBalance(address);
-      })
-      .catch((error) => {
-        toast.dismiss();
-        toast.error("failed to edit memory.");
-        setLoading(false);
-      });
-  };
 
   const deleteMemory = async (memory) => {
     setLoading(true);
@@ -124,7 +107,6 @@ const Memories = ({ address, fetchBalance }) => {
               address={address}
               memory={data}
               sendFeedback={sendFeedback}
-              editMemory={editMemory}
               deleteMemory={deleteMemory}
               key={index}
             />

@@ -16,13 +16,11 @@ const Memory = ({
   address,
   memory,
   sendFeedback,
-  editMemory,
   deleteMemory,
 }) => {
   const { description, helpful, nothelpful, appId, owner, userFeedback } =
     memory;
 
-  const [newdescription, setNewDescription] = useState("");
 
   return (
     <Col key={appId}>
@@ -43,17 +41,18 @@ const Memory = ({
           <Stack
             direction="horizontal"
             gap={2}
-            style={{ paddingButtom: "2rem" }}
+            style={{ paddingButtom: "5rem" }}
           >
             <Badge bg="secondary" className="ms-auto">
-              {helpful} people finds this helpful
+              {helpful} Helpful
             </Badge>
             <Badge bg="secondary" className="ms-auto">
-              {nothelpful} people finds this unhelpful
+              {nothelpful} Unhelpful
             </Badge>
           </Stack>
 
           {memory.owner !== address && (
+            <Form>
             <Button
               variant="outline-primary mt-2"
               onClick={() => sendFeedback(memory, 1)}
@@ -62,9 +61,11 @@ const Memory = ({
             >
               Helpful
             </Button>
+            </Form>
           )}
 
           {memory.owner !== address && (
+            <Form>
             <Button
               style={{ marginTop: "0.5rem" }}
               variant="outline-danger"
@@ -74,41 +75,22 @@ const Memory = ({
             >
               Not Helpful
             </Button>
+            </Form>
           )}
 
           {memory.owner === address && (
             <Form>
-              <FloatingLabel
-                controlId="inputDescription"
-                label="Description"
-                className="mb-3"
-                style={{ marginTop: "2rem" }}
-              >
-                <Form.Control
-                  type="text"
-                  onChange={(e) => {
-                    setNewDescription(e.target.value);
-                  }}
-                  placeholder="Enter New Description"
-                />
-              </FloatingLabel>
               <Button
-                variant="outline-danger"
-                onClick={() => editMemory(memory, newdescription)}
-                className="btn"
-              >
-                Edit Memory
-              </Button>
-
-              <Button
+              
                 variant="outline-danger"
                 onClick={() => deleteMemory(memory)}
-                className="btn"
+                className="btn mt-2"
                 style={{ marginLeft: "2rem" }}
               >
                 <i className="bi bi-trash"></i>
               </Button>
-            </Form>
+              </Form>
+        
           )}
         </Card.Body>
       </Card>
@@ -120,7 +102,6 @@ Memory.propTypes = {
   address: PropTypes.string.isRequired,
   memory: PropTypes.instanceOf(Object).isRequired,
   sendFeedback: PropTypes.func.isRequired,
-  editMemory: PropTypes.func.isRequired,
   deleteMemory: PropTypes.func.isRequired,
 };
 

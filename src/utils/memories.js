@@ -190,47 +190,6 @@ export const sendFeedbackAction = async (senderAddress, memory, feedback) => {
   }
 };
 
-// Edit Description: ApplicationCallTxn
-export const editAction = async (senderAddress, memory, newdescription) => {
-  console.log("editing  description...");
-
-  let params = await algodClient.getTransactionParams().do();
-
-  // Build required app args as Uint8Array
-  let editArg = new TextEncoder().encode("editmemory");
-  let description = new TextEncoder().encode(newdescription);
-
-  let appArgs = [editArg, description];
-
-  // Create ApplicationCallTxn
-  let appCallTxn = algosdk.makeApplicationCallTxnFromObject({
-    from: senderAddress,
-    appIndex: memory.appId,
-    onComplete: algosdk.OnApplicationComplete.NoOpOC,
-    suggestedParams: params,
-    appArgs: appArgs,
-  });
-
-  // Get transaction ID
-  let txId = appCallTxn.txID().toString();
-
-  // Sign & submit the transaction
-  let signedTxn = await myAlgoConnect.signTransaction(appCallTxn.toByte());
-
-  console.log("Signed transaction with txID: %s", txId);
-  await algodClient.sendRawTransaction(signedTxn.blob).do();
-
-  // Wait for transaction to be confirmed
-  const confirmedTxn = await algosdk.waitForConfirmation(algodClient, txId, 4);
-
-  // Get the completed Transaction
-  console.log(
-    "Transaction " +
-      txId +
-      " confirmed in round " +
-      confirmedTxn["confirmed-round"]
-  );
-};
 
 // DELETE PRODUCT: ApplicationDeleteTxn
 export const deleteMemoryAction = async (senderAddress, index) => {

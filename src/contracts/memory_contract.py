@@ -81,7 +81,7 @@ class Memory:
             Assert(
                 And(
                     Txn.application_args.length() == Int(1),
-                    Txn.note() == Bytes("memories:uv4.1"),
+                    Txn.note() == Bytes("memories:uv5.1"),
                     Len(Txn.application_args[0]) > Int(0),
                 )
             ),
@@ -185,21 +185,6 @@ class Memory:
             [Btoi(Txn.application_args[1]) == Int(0), self.nothelpful()],
         )
 
-    # editing the memory and only the owner of the memory can do this
-
-    def edit_memory(self):
-        Assert(
-            And(
-                Txn.sender() == Global.creator_address(),
-                Txn.application_args.length() == Int(2),
-            ),
-        ),
-        return Seq([
-            # update information
-            self.store_description(Txn.application_args[1]),
-            Approve()
-        ])
-
     # deleting a memory from the block-chain
     def application_deletion(self):
         return Return(Txn.sender() == Global.creator_address())
@@ -211,9 +196,7 @@ class Memory:
             [Txn.on_completion() == OnComplete.DeleteApplication,
              self.application_deletion()],
             [Txn.on_completion() == OnComplete.OptIn, self.opt_in()],
-            [Txn.application_args[0] ==
-                self.AppMethods.give_feedback, self.give_feedback()],
-            [Txn.application_args[0] == self.AppMethods.edit_memory, self.edit_memory()],
+            [Txn.application_args[0] == self.AppMethods.give_feedback, self.give_feedback()],
         )
 
     def approval_program(self):
